@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Музыкальный плеер</title>
+    <link rel="stylesheet" href="index.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  </head>
+  <body>
+    <!-- Кастомный заголовок окна -->
+    <div class="titlebar">
+      <div class="titlebar-drag-region">
+        <div class="window-title"><i class="fa-solid fa-music"></i> Re:Player</div>
+      </div>
+      <div class="window-controls">
+        <button id="minimize-btn" class="window-control-btn"><i class="fa-solid fa-window-minimize"></i></button>
+        <button id="maximize-btn" class="window-control-btn"><i class="fa-solid fa-maximize"></i></button>
+        <button id="close-btn" class="window-control-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+    </div>
+    
+    <div class="music-player">
+      <div class="player-container">
+        <div class="song-info">
+          <div class="song-image">
+            <img id="album-art" src="./assets/images/placeholder.svg" alt="Обложка альбома" draggable="false">
+          </div>
+          <div class="song-h2">
+          <div class="song-details">
+            <h2 id="song-title">Название песни</h2>
+            <p id="artist-name">Исполнитель</p>
+            
+            <div class="song-album">
+              <img id="album-art" src="./assets/images/placeholder.png" alt="Обложка альбома" draggable="false">
+              <span>Мой плейлист</span>
+            </div>
+
+            <div class="actions">
+              <i class="fa-solid fa-heart"></i>
+              <i class="fa-solid fa-bookmark"></i>
+              <i class="fa-solid fa-share"></i>
+              <i class="fa-solid fa-cloud-arrow-down"></i>
+            </div>
+
+          </div>
+          </div>
+        </div>
+        
+        <div class="progress-container">
+          <div class="progress-bar">
+            <div id="progress"></div>
+          </div>
+          <div class="time-info">
+            <span id="current-time">0:00</span>
+            <span id="duration">0:00</span>
+          </div>
+        </div>
+        
+        <div class="controls">
+          <div class="control-btn-container">
+            <button id="prev" class="control-btn"><i class="fa-solid fa-backward"></i></button>
+            <button id="play" class="control-btn"><i class="fas fa-play"></i></button>
+            <button id="next" class="control-btn"><i class="fa-solid fa-forward"></i></button>
+          </div>
+          <div class="volume-container">
+            <label class="volume" for="volume"><i class="fa-solid fa-volume-low"></i></label>
+            <input type="range" id="volume" min="0" max="100" value="50">
+          </div>
+        </div>
+      </div>
+      
+      <div class="playlist">
+        <h3>Плейлист</h3>
+        <ul id="playlist-items">
+          <li class="playlist-item active">Песня 1 - Исполнитель 1</li>
+          <li class="playlist-item">Песня 2 - Исполнитель 2</li>
+          <li class="playlist-item">Песня 3 - Исполнитель 3</li>
+        </ul>
+      </div>
+    </div>
+    
+  <div class="bottom-player">
+    <div class="bottom-player-container">
+      <div class="left-side">
+          <div class="bottom-player-image">
+            <img src="./assets/images/placeholder.png" alt="Обложка альбома" draggable="false">
+          </div>
+      <div class="bottom-player-details">
+          <h2 id="song-title">Название песни</h2>
+          <p id="artist-name">Исполнитель</p>
+      </div>
+      </div>
+      <div class="right-side">
+        <div class="control-bottom-container">
+          <div class="control-bottom-btn-container">
+          <button id="prev" class="control-btn"><i class="fa-solid fa-backward"></i></button>
+          <button id="play" class="control-btn"><i class="fas fa-play"></i></button>
+          <button id="next" class="control-btn"><i class="fa-solid fa-forward"></i></button>
+          </div>
+          <label class="volume" for="volume"><i class="fa-solid fa-volume-low"></i></label>
+          <input type="range" id="volume" min="0" max="100" value="50">
+        </div>
+      </div>
+    </div>
+  </div>
+    
+    <script src="renderer.js"></script>
+  </body>
+</html>
