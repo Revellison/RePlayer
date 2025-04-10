@@ -16,7 +16,7 @@ const createWindow = () => {
     height: 700,
     minWidth: 800,
     minHeight: 600,
-    icon: path.join(__dirname, 'assets/icon.png'),
+    icon: path.join(__dirname, 'assets/images/icon.png'),
     frame: false, // Убираем стандартный заголовок окна
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -50,7 +50,6 @@ const createWindow = () => {
   mainWindow.setTitle('Re:Player');
 
   
-  // Также добавляем горячую клавишу F12 для открытия DevTools
   mainWindow.webContents.on('before-input-event', (event, input) => {
     if (input.key === 'F12') {
       mainWindow.webContents.toggleDevTools();
@@ -58,7 +57,6 @@ const createWindow = () => {
     }
   });
 
-  // Функция для проверки изменений в файлах
   const checkForChanges = () => {
     const filesToWatch = [
       path.join(__dirname, 'index.html'),
@@ -70,26 +68,24 @@ const createWindow = () => {
       try {
         const watcher = fs.watch(file, (eventType) => {
           if (eventType === 'change') {
-            console.log(`Файл ${file} был изменен`);
+            console.log(`File ${file} was changed`);
             mainWindow.reload();
           }
         });
 
         watcher.on('error', (error) => {
-          console.error(`Ошибка при отслеживании файла ${file}:`, error);
-          // Переподключаемся через 1 секунду
+          console.error(`Error while tracking file ${file}:`, error);
           setTimeout(() => {
-            console.log(`Переподключение к файлу ${file}...`);
+            console.log(`Reconnecting to file ${file}...`);
             checkForChanges();
           }, 1000);
         });
       } catch (error) {
-        console.error(`Не удалось начать отслеживание файла ${file}:`, error);
+        console.error(`Failed to start tracking file ${file}:`, error);
       }
     });
   };
 
-  // Запускаем проверку изменений
   checkForChanges();
 };
 

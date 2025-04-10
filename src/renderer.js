@@ -1,14 +1,18 @@
-const playButton = document.getElementById('play');
-const prevButton = document.getElementById('prev');
-const nextButton = document.getElementById('next');
-const volumeControl = document.getElementById('volume');
-const songTitle = document.getElementById('song-title');
-const artistName = document.getElementById('artist-name');
-const albumArt = document.getElementById('album-art');
-const progressBar = document.getElementById('progress');
-const currentTimeEl = document.getElementById('current-time');
-const durationEl = document.getElementById('duration');
+const playBtn = document.getElementById('play');
+const prevBtn = document.getElementById('prev');
+const nextBtn = document.getElementById('next');
+const volumeBtn = document.getElementById('volume-btn');
+const volumeSlider = document.querySelector('.volume-slider-wrapper input[type="range"]');
+const progressBarBottom = document.querySelector('.progress-container-bottom .progress-bar #progress');
+const progressBarTop = document.querySelector('.progress-container .progress-bar #progress');
+const currentTimeElBottom = document.getElementById('current-time');
+const durationElBottom = document.getElementById('duration');
+const currentTimeElTop = document.querySelector('.progress-container .time-info:first-child');
+const durationElTop = document.querySelector('.progress-container .time-info:last-child');
 const playlistItems = document.getElementById('playlist-items');
+const songTitle = document.querySelector('.bottom-player-details h2');
+const artistName = document.querySelector('.bottom-player-details p');
+const albumArt = document.querySelector('.bottom-player-image img');
 
 const minimizeBtn = document.getElementById('minimize-btn');
 const maximizeBtn = document.getElementById('maximize-btn');
@@ -41,15 +45,15 @@ let updateTimer;
 let isMaximized = false;
 
 const audio = new Audio();
-audio.volume = volumeControl.value / 100;
+audio.volume = volumeSlider.value / 100;
 
 function initPlayer() {
   loadTrack(currentTrackIndex);
   
-  playButton.addEventListener('click', togglePlay);
-  prevButton.addEventListener('click', playPrevTrack);
-  nextButton.addEventListener('click', playNextTrack);
-  volumeControl.addEventListener('input', setVolume);
+  playBtn.addEventListener('click', togglePlay);
+  prevBtn.addEventListener('click', playPrevTrack);
+  nextBtn.addEventListener('click', playNextTrack);
+  volumeSlider.addEventListener('input', setVolume);
   
   audio.addEventListener('timeupdate', updateProgress);
   audio.addEventListener('ended', playNextTrack);
@@ -101,9 +105,12 @@ function loadTrack(trackIndex) {
 }
 
 function resetPlayer() {
-  currentTimeEl.textContent = '0:00';
-  durationEl.textContent = '0:00';
-  progressBar.style.width = '0%';
+  currentTimeElBottom.textContent = '0:00';
+  durationElBottom.textContent = '0:00';
+  currentTimeElTop.textContent = '0:00';
+  durationElTop.textContent = '0:00';
+  progressBarBottom.style.width = '0%';
+  progressBarTop.style.width = '0%';
 }
 
 function togglePlay() {
@@ -117,13 +124,13 @@ function togglePlay() {
 function playTrack() {
   // В реальном проекте здесь будет audio.play()
   isPlaying = true;
-  playButton.innerHTML = '<i class="fas fa-pause"></i>';
+  playBtn.innerHTML = '<i class="fas fa-pause"></i>';
 }
 
 function pauseTrack() {
   // В реальном проекте здесь будет audio.pause()
   isPlaying = false;
-  playButton.innerHTML = '<i class="fa-solid fa-play"></i>';
+  playBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
 }
 
 function playPrevTrack() {
@@ -139,24 +146,34 @@ function playNextTrack() {
 }
 
 function setVolume() {
-  audio.volume = volumeControl.value / 100;
+  audio.volume = volumeSlider.value / 100;
+  updateVolumeIcon();
+}
+
+function updateVolumeIcon() {
+  const volume = audio.volume;
+  const icon = volumeBtn.querySelector('i');
+  
+  if (volume === 0) {
+    icon.style.opacity = '0.3';
+  } else if (volume < 0.5) {
+    icon.style.opacity = '0.6';
+  } else {
+    icon.style.opacity = '1';
+  }
 }
 
 function updateProgress() {
-  // В демо-режиме используем случайный прогресс
-  const fakeCurrentTime = Math.floor(Math.random() * 180);
-  const fakeDuration = 180;
-  
-  // В реальном проекте здесь будут реальные значения:
-  // const currentTime = audio.currentTime;
-  // const duration = audio.duration;
-  
-  // Обновление прогресс-бара
-  const progressPercent = (fakeCurrentTime / fakeDuration) * 100;
-  progressBar.style.width = `${progressPercent}%`;
-  
-  currentTimeEl.textContent = formatTime(fakeCurrentTime);
-  durationEl.textContent = formatTime(fakeDuration);
+  if (audio.duration) {
+    const progress = (audio.currentTime / audio.duration) * 100;
+    progressBarBottom.style.width = `${progress}%`;
+    progressBarTop.style.width = `${progress}%`;
+    
+    currentTimeElBottom.textContent = formatTime(audio.currentTime);
+    durationElBottom.textContent = formatTime(audio.duration);
+    currentTimeElTop.textContent = formatTime(audio.currentTime);
+    durationElTop.textContent = formatTime(audio.duration);
+  }
 }
 
 function formatTime(seconds) {
@@ -192,6 +209,13 @@ function renderPlaylist() {
     
     playlistItems.appendChild(li);
   });
+}
+
+function updateTrackInfo() {
+  const track = playlist[currentTrackIndex];
+  songTitle.textContent = track.title;
+  artistName.textContent = track.artist;
+  albumArt.src = track.image;
 }
 
 document.addEventListener('DOMContentLoaded', initPlayer);

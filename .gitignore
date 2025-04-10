@@ -5,6 +5,20 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+package-lock.json
+# API environment variables
+api/.env
+api/*.env
+api/.env.*
+api/env.*
+api/.env.local
+api/.env.development
+api/.env.test
+api/.env.production
+api/.env.staging
+api/.env.backup
+
+
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
