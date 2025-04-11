@@ -38,7 +38,9 @@ const createWindow = () => {
           "default-src 'self';" +
           "img-src 'self' data:;" +
           "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;" +
-          "font-src 'self' https://cdnjs.cloudflare.com;"
+          "font-src 'self' https://cdnjs.cloudflare.com;" +
+          "script-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline' blob:;" +
+          "worker-src blob:;"
         ]
       }
     });

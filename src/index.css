@@ -550,19 +550,55 @@ body::-webkit-scrollbar {
 }
 
 .progress-bar {
-  flex: 1 1 auto;
+  position: relative;
   height: 6px;
-  background-color: var(--progress-background);
-  border-radius: 3px;
-  overflow: hidden;
-  margin: 0;
-  min-width: 0;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  flex-grow: 1;
+  margin: 0 10px;
+  cursor: pointer;
+  overflow: visible;
 }
 
-#progress {
-  width: 30%;
+.progress-bar #progress,
+.progress-bar [data-role="progress-bar"],
+.progress-bar [data-role="progress-top"] {
+  position: absolute;
+  left: 0;
+  top: 0;
   height: 100%;
   background-color: var(--text-color);
+  border-radius: 2px;
+  transition: width 0.1s ease;
+}
+
+.progress-handle {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  cursor: pointer;
+  display: none;
+  pointer-events: none;
+  margin-left: -6px;
+  transition: left 0.1s ease;
+}
+
+.progress-bar:hover .progress-handle {
+  display: block;
+}
+
+.progress-handle.active {
+  display: block;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  background-color: var(--primary-color);
 }
 
 .controls {
