@@ -1,40 +1,27 @@
-const playBtn = document.getElementById('play');
-const prevBtn = document.getElementById('prev');
-const nextBtn = document.getElementById('next');
-const volumeBtn = document.getElementById('volume-btn');
-const volumeSlider = document.querySelector('.volume-slider-wrapper input[type="range"]');
-const progressBarBottom = document.querySelector('.progress-container-bottom .progress-bar #progress');
-const progressBarTop = document.querySelector('.progress-container .progress-bar #progress');
-const currentTimeElBottom = document.getElementById('current-time');
-const durationElBottom = document.getElementById('duration');
-const currentTimeElTop = document.querySelector('.progress-container .time-info:first-child');
-const durationElTop = document.querySelector('.progress-container .time-info:last-child');
-const playlistItems = document.getElementById('playlist-items');
-const songTitle = document.querySelector('.bottom-player-details h2');
-const artistName = document.querySelector('.bottom-player-details p');
-const albumArt = document.querySelector('.bottom-player-image img');
 
-const minimizeBtn = document.getElementById('minimize-btn');
-const maximizeBtn = document.getElementById('maximize-btn');
-const closeBtn = document.getElementById('close-btn');
+let playBtn, prevBtn, nextBtn, volumeBtn, volumeSlider;
+let progressBarBottom, progressBarTop;
+let currentTimeElBottom, durationElBottom, currentTimeElTop, durationElTop;
+let playlistItems, songTitle, artistName, albumArt;
+let minimizeBtn, maximizeBtn, closeBtn;
 
 const playlist = [
   {
     title: 'Я дэбил',
     artist: 'MACAN',
-    image: './assets/images/placeholder.png',
+    image: '../assets/images/placeholder.png',
     source: ''
   },
   {
     title: 'Песня 2',
     artist: 'Исполнитель 2',
-    image: './assets/images/placeholder.png',
+    image: '../assets/images/placeholder.png',
     source: ''
   },
   {
     title: 'Песня 3',
     artist: 'Исполнитель 3',
-    image: './assets/images/placeholder.png',
+    image: '../assets/images/placeholder.png',
     source: ''
   }
 ];
@@ -45,72 +32,92 @@ let updateTimer;
 let isMaximized = false;
 
 const audio = new Audio();
-audio.volume = volumeSlider.value / 100;
+audio.volume = 0.5;
 
 function initPlayer() {
+  initDOMElements();
+  
+  if (volumeSlider) {
+    audio.volume = volumeSlider.value / 100;
+  }
+  
   loadTrack(currentTrackIndex);
   
-  playBtn.addEventListener('click', togglePlay);
-  prevBtn.addEventListener('click', playPrevTrack);
-  nextBtn.addEventListener('click', playNextTrack);
-  volumeSlider.addEventListener('input', setVolume);
+  addEventListeners();
+  
+  renderPlaylist();
+}
+
+function initDOMElements() {
+  playBtn = document.getElementById('play');
+  prevBtn = document.getElementById('prev');
+  nextBtn = document.getElementById('next');
+  volumeBtn = document.getElementById('volume-btn');
+  volumeSlider = document.querySelector('.volume-slider-wrapper input[type="range"]');
+  progressBarBottom = document.querySelector('.progress-container-bottom .progress-bar #progress');
+  progressBarTop = document.querySelector('.progress-container .progress-bar #progress');
+  currentTimeElBottom = document.getElementById('current-time');
+  durationElBottom = document.getElementById('duration');
+  currentTimeElTop = document.querySelector('.progress-container .time-info:first-child');
+  durationElTop = document.querySelector('.progress-container .time-info:last-child');
+  playlistItems = document.getElementById('playlist-items');
+  songTitle = document.querySelector('.bottom-player-details h2');
+  artistName = document.querySelector('.bottom-player-details p');
+  albumArt = document.querySelector('.bottom-player-image img');
+  minimizeBtn = document.getElementById('minimize-btn');
+  maximizeBtn = document.getElementById('maximize-btn');
+  closeBtn = document.getElementById('close-btn');
+}
+
+function addEventListeners() {
+  if (playBtn) playBtn.addEventListener('click', togglePlay);
+  if (prevBtn) prevBtn.addEventListener('click', playPrevTrack);
+  if (nextBtn) nextBtn.addEventListener('click', playNextTrack);
+  if (volumeSlider) volumeSlider.addEventListener('input', setVolume);
   
   audio.addEventListener('timeupdate', updateProgress);
   audio.addEventListener('ended', playNextTrack);
-  
-  renderPlaylist();
-  initWindowControls();
-}
-
-function initWindowControls() {
-  if (window.electronAPI) {
-    minimizeBtn.addEventListener('click', () => {
-      window.electronAPI.minimizeWindow();
-    });
-    
-    maximizeBtn.addEventListener('click', async () => {
-      isMaximized = await window.electronAPI.maximizeWindow();
-      updateMaximizeButtonIcon();
-    });
-    
-    closeBtn.addEventListener('click', () => {
-      window.electronAPI.closeWindow();
-    });
-  } else {
-    console.error('Electron API не доступен');
-    document.querySelector('.window-controls').style.display = 'none';
-  }
-}
-
-function updateMaximizeButtonIcon() {
-  maximizeBtn.innerHTML = isMaximized ? '<i class="fa-solid fa-minimize"></i>' : '<i class="fa-solid fa-maximize"></i>';
 }
 
 function loadTrack(trackIndex) {
-  clearInterval(updateTimer);
+  if (updateTimer) clearInterval(updateTimer);
   resetPlayer();
   
   const track = playlist[trackIndex];
+  if (!track) return;
   
-  songTitle.textContent = track.title;
-  artistName.textContent = track.artist;
-  albumArt.src = track.image;
+  updatePlayerInfo(track);
   
-  // В реальном приложении здесь будет источник трека
-  // audio.src = track.source;
-  
-  // Обновление активного трека в плейлисте
   updateActiveTrack();
   updateTimer = setInterval(updateProgress, 1000);
 }
 
+function updatePlayerInfo(track) {
+  if (!track) return;
+  
+  if (songTitle) songTitle.textContent = track.title;
+  if (artistName) artistName.textContent = track.artist;
+  if (albumArt) albumArt.src = track.image;
+  
+  const mainSongTitle = document.getElementById('song-title');
+  const mainArtistName = document.getElementById('artist-name');
+  const mainAlbumArt = document.querySelector('.song-image img');
+  
+  if (mainSongTitle) mainSongTitle.textContent = track.title;
+  if (mainArtistName) mainArtistName.textContent = track.artist;
+  if (mainAlbumArt) mainAlbumArt.src = track.image;
+}
+
 function resetPlayer() {
-  currentTimeElBottom.textContent = '0:00';
-  durationElBottom.textContent = '0:00';
-  currentTimeElTop.textContent = '0:00';
-  durationElTop.textContent = '0:00';
-  progressBarBottom.style.width = '0%';
-  progressBarTop.style.width = '0%';
+  const resetTime = '0:00';
+  if (currentTimeElBottom) currentTimeElBottom.textContent = resetTime;
+  if (durationElBottom) durationElBottom.textContent = resetTime;
+  if (currentTimeElTop) currentTimeElTop.textContent = resetTime;
+  if (durationElTop) durationElTop.textContent = resetTime;
+  
+  const resetWidth = '0%';
+  if (progressBarBottom) progressBarBottom.style.width = resetWidth;
+  if (progressBarTop) progressBarTop.style.width = resetWidth;
 }
 
 function togglePlay() {
@@ -122,15 +129,13 @@ function togglePlay() {
 }
 
 function playTrack() {
-  // В реальном проекте здесь будет audio.play()
   isPlaying = true;
-  playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+  if (playBtn) playBtn.innerHTML = '<i class="fas fa-pause"></i>';
 }
 
 function pauseTrack() {
-  // В реальном проекте здесь будет audio.pause()
   isPlaying = false;
-  playBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+  if (playBtn) playBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
 }
 
 function playPrevTrack() {
@@ -146,44 +151,51 @@ function playNextTrack() {
 }
 
 function setVolume() {
+  if (!volumeSlider) return;
   audio.volume = volumeSlider.value / 100;
   updateVolumeIcon();
 }
 
 function updateVolumeIcon() {
-  const volume = audio.volume;
+  if (!volumeBtn) return;
   const icon = volumeBtn.querySelector('i');
+  if (!icon) return;
   
-  if (volume === 0) {
-    icon.style.opacity = '0.3';
-  } else if (volume < 0.5) {
-    icon.style.opacity = '0.6';
-  } else {
-    icon.style.opacity = '1';
-  }
+  const volume = audio.volume;
+  icon.style.opacity = volume === 0 ? '0.3' : volume < 0.5 ? '0.6' : '1';
 }
 
 function updateProgress() {
-  if (audio.duration) {
-    const progress = (audio.currentTime / audio.duration) * 100;
-    progressBarBottom.style.width = `${progress}%`;
-    progressBarTop.style.width = `${progress}%`;
-    
-    currentTimeElBottom.textContent = formatTime(audio.currentTime);
-    durationElBottom.textContent = formatTime(audio.duration);
-    currentTimeElTop.textContent = formatTime(audio.currentTime);
-    durationElTop.textContent = formatTime(audio.duration);
-  }
+  if (!audio.duration) return;
+  
+  const progress = (audio.currentTime / audio.duration) * 100;
+  
+  if (progressBarBottom) progressBarBottom.style.width = `${progress}%`;
+  if (progressBarTop) progressBarTop.style.width = `${progress}%`;
+  
+  const formattedCurrentTime = formatTime(audio.currentTime);
+  const formattedDuration = formatTime(audio.duration);
+  
+  if (currentTimeElBottom) currentTimeElBottom.textContent = formattedCurrentTime;
+  if (durationElBottom) durationElBottom.textContent = formattedDuration;
+  if (currentTimeElTop) currentTimeElTop.textContent = formattedCurrentTime;
+  if (durationElTop) durationElTop.textContent = formattedDuration;
 }
 
 function formatTime(seconds) {
+  if (!seconds || isNaN(seconds)) return '0:00';
+  
   const min = Math.floor(seconds / 60);
   const sec = Math.floor(seconds % 60);
   return `${min}:${sec < 10 ? '0' + sec : sec}`;
 }
 
 function updateActiveTrack() {
+  if (!playlistItems) return;
+  
   const items = playlistItems.getElementsByTagName('li');
+  if (!items || !items.length) return;
+  
   for (let i = 0; i < items.length; i++) {
     if (i === currentTrackIndex) {
       items[i].classList.add('active');
@@ -194,6 +206,7 @@ function updateActiveTrack() {
 }
 
 function renderPlaylist() {
+  if (!playlistItems) return;
   playlistItems.innerHTML = '';
   
   playlist.forEach((track, index) => {
@@ -211,11 +224,8 @@ function renderPlaylist() {
   });
 }
 
-function updateTrackInfo() {
-  const track = playlist[currentTrackIndex];
-  songTitle.textContent = track.title;
-  artistName.textContent = track.artist;
-  albumArt.src = track.image;
-}
-
-document.addEventListener('DOMContentLoaded', initPlayer);
+document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('componentsLoaded', () => {
+    initPlayer();
+  });
+});

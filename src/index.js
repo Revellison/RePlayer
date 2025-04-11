@@ -2,7 +2,6 @@ const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('node:path');
 const fs = require('fs');
 
-// Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   app.quit();
 }
@@ -10,14 +9,14 @@ if (require('electron-squirrel-startup')) {
 let mainWindow;
 
 const createWindow = () => {
-  // Create the browser window.
+
   mainWindow = new BrowserWindow({
-    width: 900,
+    width: 1000,
     height: 700,
-    minWidth: 800,
-    minHeight: 600,
+    minWidth: 1000,
+    minHeight: 700,
     icon: path.join(__dirname, 'assets/images/icon.png'),
-    frame: false, // Убираем стандартный заголовок окна
+    frame: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -25,13 +24,12 @@ const createWindow = () => {
     },
   });
 
-  // Убираем стандартное меню
   mainWindow.setMenu(null);
 
   // and load the index.html of the app.
-  mainWindow.loadFile(path.join(__dirname, 'index.html'));
+  mainWindow.loadFile(path.join(__dirname, 'pages/index.html'));
 
-  // Установка Content Security Policy
+  //content security policy
   mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
     callback({
       responseHeaders: {
@@ -59,7 +57,7 @@ const createWindow = () => {
 
   const checkForChanges = () => {
     const filesToWatch = [
-      path.join(__dirname, 'index.html'),
+      path.join(__dirname, 'pages/index.html'),
       path.join(__dirname, 'index.css'),
       path.join(__dirname, 'renderer.js')
     ];
