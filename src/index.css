@@ -586,7 +586,7 @@ body::-webkit-scrollbar {
   display: none;
   pointer-events: none;
   margin-left: -6px;
-  transition: left 0.1s ease;
+  transition: left 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .progress-bar:hover .progress-handle {
@@ -598,7 +598,6 @@ body::-webkit-scrollbar {
   width: 14px;
   height: 14px;
   margin-left: -7px;
-  background-color: var(--primary-color);
 }
 
 .controls {

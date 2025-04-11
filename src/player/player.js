@@ -17,6 +17,7 @@
     let isTrackSwitchDebouncing = false;
     let lastActionTime = 0;
     const DEBOUNCE_DELAY = 500;
+    let trackSwitchInProgress = false;
 
     document.addEventListener('componentsLoaded', () => {
         initializePlayer();
@@ -33,14 +34,14 @@
     function loadDefaultPlaylist() {
         playlist = [
             {
-                title: 'Тестовый трек 1',
-                artist: 'Тестовый исполнитель 1',
+                title: 'Test track 1',
+                artist: 'Test artist 1', 
                 path: "../data/test/music.mp3",
                 image: "../assets/images/placeholder.png"
             },
             {
-                title: 'Тестовый трек 2',
-                artist: 'Тестовый исполнитель 2',
+                title: 'Test track 2',
+                artist: 'Test artist 2',
                 path: "../data/test/music2.mp3",
                 image: "../assets/images/placeholder.png"
             },
@@ -223,7 +224,7 @@
             updateVolumeIcon(linearVolume);
             
         } catch (error) {
-            console.error("error set volume:", error);
+            console.error("Error setting volume:", error);
         }
     }
     
@@ -263,7 +264,7 @@
             
             setVolume();
         } catch (error) {
-            console.error("error toggle mute:", error);
+            console.error("Error toggling mute:", error);
         }
     }
 
@@ -281,18 +282,23 @@
             setTimeout(() => {
                 updateDuration(duration);
             }, 10);
-            console.log(`loaded info about track duration: ${track.title}, duration: ${formatTime(duration)}`);
+            console.log(`Loaded track duration info: ${track.title}, duration: ${formatTime(duration)}`);
         } else {
             preloadTracksInfo();
         }
         
         if (audioPlayer) {
             try {
+                if (audioPlayer._endDetectionTimer) {
+                    clearTimeout(audioPlayer._endDetectionTimer);
+                    audioPlayer._endDetectionTimer = null;
+                }
+                
                 audioPlayer.stop();
                 audioPlayer.dispose();
                 audioPlayer = null;
             } catch (error) {
-                console.error("Ошибка при освобождении ресурсов плеера:", error);
+                console.error("Error releasing player resources:", error);
             }
             audioPlaying = false;
             updatePlayButtonIcon(false);
@@ -318,7 +324,7 @@
     async function createPlayer(audioPath) {
         try {
             if (typeof Tone === 'undefined') {
-                console.error('Tone.js не загружен');
+                console.error('Tone.js is not loaded');
                 return;
             }
             
@@ -330,7 +336,7 @@
             const cachedDuration = getCachedTrackDuration(audioPath);
             if (cachedDuration > 0) {
                 duration = cachedDuration;
-                console.log(`Использую сохраненную длительность: ${formatTime(duration)} (${duration} сек)`);
+                console.log(`Using cached duration: ${formatTime(duration)} (${duration} sec)`);
                 updateDuration(duration);
             }
             
@@ -340,7 +346,7 @@
                     audioPlayer.dispose();
                     audioPlayer = null;
                 } catch (error) {
-                    console.error('Ошибка при освобождении ресурсов плеера:', error);
+                    console.error('Error releasing player resources:', error);
                 }
             }
             
@@ -352,7 +358,7 @@
                     cacheTrackDuration(audioPath, duration);
                     
                     const formattedDuration = formatTime(duration);
-                    console.log(`Длительность трека: ${formattedDuration} (${duration} сек)`);
+                    console.log(`Track duration: ${formattedDuration} (${duration} sec)`);
                     
                     setTimeout(() => {
                         updateDuration(duration);
@@ -364,7 +370,7 @@
                     startProgressLoop();
                 },
                 onerror: (error) => {
-                    console.error('Ошибка загрузки аудио файла:', error);
+                    console.error('Error loading audio file:', error);
                 }
             }).toDestination();
             
@@ -375,7 +381,7 @@
                 updatePlayButtonIcon(false);
             };
         } catch (error) {
-            console.error('Ошибка при создании плеера:', error);
+            console.error('Error creating player:', error);
         }
         
         if (!window._trackEndCheckerInitialized) {
@@ -387,32 +393,34 @@
                         const current = Tone.Transport.seconds;
                         
                         if (current >= duration - 0.1) {
+                            console.log("Global check detected end of track");
+                            
                             try {
                                 Tone.Transport.pause();
                                 if (audioPlayer) {
                                     audioPlayer.stop();
                                 }
                                 audioPlaying = false;
-                            } catch (e) {
-                                console.error("Ошибка при остановке плеера:", e);
-                            }
-                            
-                            if (!isTrackSwitchDebouncing) {
-                                isTrackSwitchDebouncing = true;
                                 
-                                setTimeout(() => {
-                                    playNextTrack();
+                                if (!isTrackSwitchDebouncing) {
+                                    isTrackSwitchDebouncing = true;
+                                    
                                     setTimeout(() => {
-                                        isTrackSwitchDebouncing = false;
-                                    }, DEBOUNCE_DELAY);
-                                }, 100);
+                                        playNextTrack();
+                                        setTimeout(() => {
+                                            isTrackSwitchDebouncing = false;
+                                        }, DEBOUNCE_DELAY);
+                                    }, 100);
+                                }
+                            } catch (e) {
+                                console.error("Error stopping player:", e);
                             }
                         }
                     } catch (error) {
-                        console.error("Ошибка при проверке окончания трека:", error);
+                        console.error("Error checking track end:", error);
                     }
                 }
-            }, 500);
+            }, 1000);
         }
     }
     
@@ -509,6 +517,12 @@
                 
                 Tone.Transport.pause();
                 audioPlayer.stop();
+                
+                if (audioPlayer._endDetectionTimer) {
+                    clearTimeout(audioPlayer._endDetectionTimer);
+                    audioPlayer._endDetectionTimer = null;
+                }
+                
                 stopProgressLoop();
                 audioPlaying = false;
             } else {
@@ -526,7 +540,7 @@
                     
                     safeStartPlayer(track.path, currentTime);
                 } catch (error) {
-                    console.error("Ошибка при запуске воспроизведения:", error);
+                    console.error("Error starting playback:", error);
                     audioPlayer.start();
                 }
                 
@@ -535,7 +549,7 @@
             
             updatePlayButtonIcon(audioPlaying);
         } catch (error) {
-            console.error('Ошибка при воспроизведении:', error);
+            console.error('Error during playback:', error);
         }
     }
     
@@ -571,22 +585,95 @@
                     
                     newPlayer.volume.value = prevVolumeDB;
 
-                    newPlayer.start("+0", startTime);
-                    
-                    audioPlayer.onstop = () => {
+                    newPlayer.onstop = () => {
                         audioPlaying = false;
                         updatePlayButtonIcon(false);
+                        
+                        if (!trackSwitchInProgress && currentTime >= duration - 0.5) {
+                            playNextTrack();
+                        }
                     };
+                    
+                    const originalTrackIndex = currentTrackIndex;
+                    newPlayer.buffer.onended = () => {
+                        if (originalTrackIndex === currentTrackIndex && !trackSwitchInProgress) {
+                            try {
+                                Tone.Transport.pause();
+                                if (audioPlayer) {
+                                    audioPlayer.stop();
+                                }
+                                audioPlaying = false;
+                            } catch (e) {
+                                console.error("Error stopping player:", e);
+                            }
+                            
+                            playNextTrack();
+                        }
+                    };
+                    
+                    const trackDuration = newPlayer.buffer.duration;
+                    
+                    const endDetectionTimer = setInterval(() => {
+                        if (!audioPlaying || !audioPlayer || !audioPlayer.buffer || audioPlayer !== newPlayer) {
+                            clearInterval(endDetectionTimer);
+                            return;
+                        }
+                        
+                        try {
+                            const current = Tone.Transport.seconds;
+                            
+                            if (duration > 0 && current >= duration - 0.5 && current <= duration + 1) {
+                                clearInterval(endDetectionTimer);
+                                
+                                if (!trackSwitchInProgress) {
+                                    try {
+                                        Tone.Transport.pause();
+                                        if (audioPlayer) {
+                                            audioPlayer.stop();
+                                        }
+                                        audioPlaying = false;
+                                    } catch (e) {
+                                        console.error("Error stopping player:", e);
+                                    }
+                                    
+                                    playNextTrack();
+                                }
+                            }
+                        } catch (error) {
+                            console.error("Error checking track end:", error);
+                            clearInterval(endDetectionTimer);
+                        }
+                    }, 300);
+                    
+                    newPlayer._endDetectionTimer = endDetectionTimer;
+
+                    newPlayer.start("+0", startTime);
+                    
+                    const startCheckTimeout = setTimeout(() => {
+                        if (audioPlayer === newPlayer && audioPlaying && audioPlayer.state !== "started") {
+                            console.log("Audio did not start automatically, retrying start");
+                            try {
+                                newPlayer.stop();
+                                newPlayer.start("+0", startTime);
+                            } catch (e) {
+                                console.error("Error during retry start:", e);
+                            }
+                        }
+                    }, 500);
+                    
+                    setTimeout(() => {
+                        clearTimeout(startCheckTimeout);
+                    }, 1000);
                 },
                 onerror: (error) => {
-                    console.error('Ошибка загрузки аудио файла:', error);
+                    console.error('Error loading audio file:', error);
                     if (audioPlayer) {
                         audioPlayer.start();
                     }
                 }
             }).toDestination();
         } catch (error) {
-            console.error("Ошибка при создании плеера для продолжения:", error);
+            console.error("Error creating player for continuation:", error);
             if (audioPlayer) {
                 audioPlayer.start();
             }
@@ -594,7 +681,10 @@
     }
     
     function playPrevTrack() {
+        console.log("Switching to previous track");
+        
         if (isTrackSwitchDebouncing) {
+            console.log("Track switch already in progress, skipping");
             return;
         }
         
@@ -604,29 +694,51 @@
             isTrackSwitchDebouncing = false;
         }, DEBOUNCE_DELAY);
         
+        if (audioPlayer && audioPlayer._endDetectionTimer) {
+            clearInterval(audioPlayer._endDetectionTimer);
+            audioPlayer._endDetectionTimer = null;
+        }
+        
         const newIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
         currentTrackIndex = newIndex;
         const track = playlist[newIndex];
+        
+        console.log(`Switching to track: ${track.title} (index: ${newIndex})`);
         
         const cachedDuration = getCachedTrackDuration(track.path);
         if (cachedDuration > 0) {
             duration = cachedDuration;
             updateDuration(duration);
-            console.log(`Установлена длительность для предыдущего трека: ${formatTime(duration)}`);
+            console.log(`Set duration for previous track: ${formatTime(duration)} (${duration} sec)`);
         } else {
+            console.log("Track duration not found in cache, loading info");
             preloadTracksInfo();
         }
         
         updateTrackInfo(track);
         updateActiveTrack();
         
+        if (audioPlayer) {
+            try {
+                audioPlayer.stop();
+                Tone.Transport.pause();
+            } catch (e) {
+                console.error("Error stopping current track:", e);
+            }
+        }
+        
         Tone.start().then(() => {
+            console.log("Tone.js started, loading new track");
             safeStartPlayer(track.path, 0);
             Tone.Transport.seconds = 0;
             Tone.Transport.start();
             audioPlaying = true;
             updatePlayButtonIcon(true);
             startProgressLoop();
+            console.log("New track started");
+        }).catch(error => {
+            console.error("Error starting Tone.js:", error);
+            isTrackSwitchDebouncing = false;
         });
         
         setTimeout(() => {
@@ -634,17 +746,20 @@
         }, 1000);
     }
     
-    
     function playNextTrack() {
-        if (isTrackSwitchDebouncing) {
+        console.log("Switching to next track");
+        
+        if (trackSwitchInProgress) {
+            console.log("Track switch already in progress");
             return;
         }
         
-        isTrackSwitchDebouncing = true;
+        trackSwitchInProgress = true;
         
-        setTimeout(() => {
-            isTrackSwitchDebouncing = false;
-        }, DEBOUNCE_DELAY);
+        if (audioPlayer && audioPlayer._endDetectionTimer) {
+            clearInterval(audioPlayer._endDetectionTimer);
+            audioPlayer._endDetectionTimer = null;
+        }
         
         const newIndex = (currentTrackIndex + 1) % playlist.length;
         currentTrackIndex = newIndex;
@@ -654,13 +769,21 @@
         if (cachedDuration > 0) {
             duration = cachedDuration;
             updateDuration(duration);
-            console.log(`Установлена длительность для следующего трека: ${formatTime(duration)}`);
         } else {
             preloadTracksInfo();
         }
         
         updateTrackInfo(track);
         updateActiveTrack();
+        
+        if (audioPlayer) {
+            try {
+                audioPlayer.stop();
+                Tone.Transport.pause();
+            } catch (e) {
+                console.error("Error stopping current track:", e);
+            }
+        }
         
         Tone.start().then(() => {
             safeStartPlayer(track.path, 0);
@@ -669,14 +792,21 @@
             audioPlaying = true;
             updatePlayButtonIcon(true);
             startProgressLoop();
+            
+            setTimeout(() => {
+                trackSwitchInProgress = false;
+                isTrackSwitchDebouncing = false;
+            }, DEBOUNCE_DELAY);
+        }).catch(error => {
+            console.error("Error starting Tone.js:", error);
+            trackSwitchInProgress = false;
+            isTrackSwitchDebouncing = false;
         });
         
         setTimeout(() => {
             preloadNextTrack();
         }, 1000);
     }
-    
-    
     
     function updatePlayButtonIcon(playing) {
         const playButton = document.getElementById('play');
@@ -711,15 +841,15 @@
         
         if (durationBottom) {
             durationBottom.textContent = formattedTime;
-            console.log(`Обновлен durationBottom: ${formattedTime}`);
+            console.log(`Updated durationBottom: ${formattedTime}`);
         }
         if (durationTop) {
             durationTop.textContent = formattedTime;
-            console.log(`Обновлен durationTop: ${formattedTime}`);
+            console.log(`Updated durationTop: ${formattedTime}`);
         }
         if (durationTopByRole && durationTopByRole !== durationTop) {
             durationTopByRole.textContent = formattedTime;
-            console.log(`Обновлен durationTopByRole: ${formattedTime}`);
+            console.log(`Updated durationTopByRole: ${formattedTime}`);
         }
     }
     
@@ -747,7 +877,7 @@
             
             updateProgressBar(currentTime, duration);
         } catch (error) {
-            console.error("Ошибка при обновлении прогресса:", error);
+            console.error("Error updating progress:", error);
         }
     }
     
@@ -841,7 +971,6 @@
                     duration = cachedDuration;
                     updateDuration(duration);
                 } else {
-
                     updateDuration(0);
 
                     setTimeout(() => {
@@ -936,24 +1065,24 @@
         
         const cachedDuration = getCachedTrackDuration(nextTrack.path);
         if (cachedDuration > 0) {
-            console.log(`loaded info about next track: ${nextTrack.title}, duration: ${formatTime(cachedDuration)}`);
+            console.log(`loaded info about track duration: ${nextTrack.title}, duration: ${formatTime(cachedDuration)}`);
             return;
         }
         
-        console.log(`loadd info about next track: ${nextTrack.title}`);
+        console.log(`loading info about track duration: ${nextTrack.title}`);
         
         const tempPlayer = new Tone.Player({
             url: nextTrack.path,
             onload: () => {
                 const trackDuration = tempPlayer.buffer.duration;
-                console.log(`loaded info about next track: ${nextTrack.title}, duration: ${formatTime(trackDuration)}`);
+                console.log(`loaded info about track: ${nextTrack.title}, duration: ${formatTime(trackDuration)}`);
                 
                 cacheTrackDuration(nextTrack.path, trackDuration);
                 
                 tempPlayer.dispose();
             },
             onerror: (error) => {
-                console.error(`error loading info about next track ${nextTrack.title}:`, error);
+                console.error(`error loading info about track ${nextTrack.title}:`, error);
                 tempPlayer.dispose();
             }
         });
