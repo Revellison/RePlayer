@@ -1,3 +1,5 @@
+// const playlistManager = require('./data/playlists/plManager');
+
 (function() {
     if (window._playerInitialized) {
         return;
@@ -12,12 +14,72 @@
     let duration = 0;
     let currentTime = 0;
     let updateTimer = null;
+    let currentPlaylistName = '';
+    let currentPlaylistId = '';
     
     let isPlayPauseDebouncing = false;
     let isTrackSwitchDebouncing = false;
     let lastActionTime = 0;
     const DEBOUNCE_DELAY = 500;
     let trackSwitchInProgress = false;
+
+    // Будем использовать playlistManager из глобального объекта
+    const playlistManager = window.playlistManager;
+    
+    // Плейлист для загрузки по умолчанию
+    const defaultPlaylistId = 'PayBoyCarti';
+    
+    // Вместо прямой загрузки, добавляем прослушиватель события загрузки плейлиста
+    let playlistTracks = null;
+    
+    // Если менеджер плейлистов доступен, пробуем загрузить плейлист
+    if (playlistManager) {
+        // Попытка получить уже загруженный плейлист
+        playlistTracks = playlistManager.convertToPlayerFormat(defaultPlaylistId);
+        
+        // Получаем данные плейлиста для отображения имени
+        const playlist = playlistManager.getPlaylistById(defaultPlaylistId);
+        if (playlist) {
+            currentPlaylistName = playlist.plName;
+            currentPlaylistId = playlist.id;
+        }
+        
+        // Если плейлист еще не загружен, подписываемся на событие загрузки
+        if (!playlistTracks) {
+            document.addEventListener('playlistLoaded', (event) => {
+                if (event.detail && event.detail.playlistId === defaultPlaylistId) {
+                    console.log(`Плейлист ${defaultPlaylistId} загружен, применяем в плеере`);
+                    playlistTracks = playlistManager.convertToPlayerFormat(defaultPlaylistId);
+                    
+                    // Получаем данные плейлиста для отображения имени
+                    const playlist = playlistManager.getPlaylistById(defaultPlaylistId);
+                    if (playlist) {
+                        currentPlaylistName = playlist.plName;
+                        currentPlaylistId = playlist.id;
+                        updatePlaylistInfo(playlist);
+                    }
+                    
+                    if (playlistTracks) {
+                        loadPlaylist(playlistTracks);
+                        
+                        if (playlist.length > 0) {
+                            loadTrack(currentTrackIndex);
+                            
+                            setTimeout(() => {
+                                preloadNextTrack();
+                            }, 1000);
+                        }
+                    }
+                }
+            });
+        } else {
+            // Обновляем информацию о плейлисте, если он загружен сразу
+            const playlist = playlistManager.getPlaylistById(defaultPlaylistId);
+            if (playlist) {
+                updatePlaylistInfo(playlist);
+            }
+        }
+    }
 
     document.addEventListener('componentsLoaded', () => {
         initializePlayer();
@@ -30,28 +92,189 @@
             loadDefaultPlaylist();
         }
     });
-
-    function loadDefaultPlaylist() {
-        playlist = [
-            {
-                title: 'Test track 1',
-                artist: 'Test artist 1', 
-                path: "../data/test/music.mp3",
-                image: "../assets/images/placeholder.png"
-            },
-            {
-                title: 'Test track 2',
-                artist: 'Test artist 2',
-                path: "../data/test/music2.mp3",
-                image: "../assets/images/placeholder.png"
-            },
-            {
-                title: 'D0 THE M0ST',
-                artist: 'Playboi Carti',
-                path: "../data/test/music3.mp3",
-                image: "../data/test/music3.jpg"
+    
+    // Добавляем обработчик для восстановления выпадающего списка при перезагрузке страницы
+    document.addEventListener('pageLoaded', () => {
+        restorePlayerState();
+        
+        // Восстанавливаем выпадающий список
+        setTimeout(() => {
+            if (playlistManager) {
+                const playlist = playlistManager.getPlaylistById(defaultPlaylistId);
+                if (playlist) {
+                    updatePlaylistInfo(playlist);
+                }
             }
-        ];
+        }, 300);
+    });
+    
+    // Добавляем обработчик для события восстановления состояния плеера
+    document.addEventListener('playerStateRestored', () => {
+        // Восстанавливаем информацию о времени и длительности после смены страницы
+        if (window._playerState) {
+            if (window._playerState.currentTime !== undefined) {
+                updateTimeDisplay(window._playerState.currentTime);
+            }
+            
+            if (window._playerState.duration !== undefined) {
+                updateDuration(window._playerState.duration);
+            }
+            
+            if (window._playerState.currentTime !== undefined && window._playerState.duration !== undefined) {
+                updateProgressBar(window._playerState.currentTime, window._playerState.duration);
+            }
+            
+            // Восстанавливаем состояние кнопки плей/пауза
+            updatePlayButtonIcon(audioPlaying);
+            
+            // Восстанавливаем активный трек в плейлисте
+            updateActiveTrack();
+        }
+        
+        // Восстанавливаем выпадающий список
+        setTimeout(() => {
+            if (playlistManager) {
+                const playlist = playlistManager.getPlaylistById(defaultPlaylistId);
+                if (playlist) {
+                    updatePlaylistInfo(playlist);
+                }
+            }
+        }, 300);
+    });
+    
+    function updatePlaylistInfo(playlist) {
+        if (!playlist) return;
+        
+        console.log('Обновляем информацию о плейлисте:', playlist.plName);
+        
+        // Обновляем название плейлиста
+        const playlistNameElements = document.querySelectorAll('#playlist-name');
+        playlistNameElements.forEach(element => {
+            if (element) element.textContent = playlist.plName;
+        });
+        
+        // Создаем выпадающий список треков
+        createPlaylistDropdown(playlist);
+    }
+    
+    function createPlaylistDropdown(playlist) {
+        if (!playlist || !playlist.tracks || playlist.tracks.length === 0) {
+            console.log('Нет треков для создания выпадающего списка');
+            return;
+        }
+        
+        console.log('Создаем выпадающий список треков для плейлиста:', playlist.plName);
+        
+        const songAlbumElements = document.querySelectorAll('.song-album');
+        if (songAlbumElements.length === 0) {
+            console.log('Не найдены элементы .song-album для добавления выпадающего списка');
+            // Если элементов нет, пробуем повторить операцию через небольшую задержку
+            setTimeout(() => createPlaylistDropdown(playlist), 500);
+            return;
+        }
+        
+        songAlbumElements.forEach(songAlbum => {
+            // Удаляем существующий выпадающий список, если он уже есть
+            const existingDropdown = songAlbum.querySelector('.playlist-tracks-dropdown');
+            if (existingDropdown) {
+                existingDropdown.remove();
+            }
+            
+            // Создаем новый выпадающий список
+            const dropdownElement = document.createElement('div');
+            dropdownElement.className = 'playlist-tracks-dropdown';
+            
+            // Добавляем заголовок
+            const headerElement = document.createElement('div');
+            headerElement.className = 'playlist-dropdown-header';
+            headerElement.textContent = playlist.plName;
+            dropdownElement.appendChild(headerElement);
+            
+            // Добавляем треки
+            playlist.tracks.forEach((track, index) => {
+                const trackElement = document.createElement('div');
+                trackElement.className = `playlist-track-item ${index === currentTrackIndex ? 'active' : ''}`;
+                trackElement.dataset.index = index;
+                
+                const infoElement = document.createElement('div');
+                infoElement.className = 'playlist-track-info';
+                
+                const titleElement = document.createElement('div');
+                titleElement.className = 'playlist-track-title';
+                titleElement.textContent = track.title;
+                
+                const artistElement = document.createElement('div');
+                artistElement.className = 'playlist-track-artist';
+                artistElement.textContent = track.artist;
+                
+                infoElement.appendChild(titleElement);
+                infoElement.appendChild(artistElement);
+                
+                trackElement.appendChild(infoElement);
+                
+                // Добавляем обработчик события для воспроизведения трека
+                trackElement.addEventListener('click', () => {
+                    currentTrackIndex = index;
+                    loadTrack(index);
+                    
+                    // Запускаем воспроизведение
+                    Tone.start().then(() => {
+                        safeStartPlayer(track.path, 0);
+                        Tone.Transport.seconds = 0;
+                        Tone.Transport.start();
+                        audioPlaying = true;
+                        updatePlayButtonIcon(true);
+                        startProgressLoop();
+                    });
+                    
+                    // Обновляем активный трек в выпадающем списке
+                    const allTrackItems = document.querySelectorAll('.playlist-track-item');
+                    allTrackItems.forEach((item) => {
+                        const itemIndex = parseInt(item.dataset.index);
+                        if (itemIndex === index) {
+                            item.classList.add('active');
+                        } else {
+                            item.classList.remove('active');
+                        }
+                    });
+                });
+                
+                dropdownElement.appendChild(trackElement);
+            });
+            
+            // Добавляем выпадающий список к контейнеру
+            songAlbum.appendChild(dropdownElement);
+        });
+    }
+    
+    function loadDefaultPlaylist() {
+        if (playlistTracks) {
+            loadPlaylist(playlistTracks);
+            
+            // Обновляем информацию о плейлисте
+            if (playlistManager) {
+                const playlist = playlistManager.getPlaylistById(defaultPlaylistId);
+                if (playlist) {
+                    updatePlaylistInfo(playlist);
+                }
+            }
+        } else {
+            // Если плейлист не загружен, используем дефолтные треки для демонстрации
+            loadPlaylist([
+                {
+                    title: 'Demo Track 1',
+                    artist: 'Demo Artist',
+                    path: "../data/test/music1.mp3",
+                    image: "../assets/images/placeholder.png"
+                },
+                {
+                    title: 'Demo Track 2',
+                    artist: 'Demo Artist',
+                    path: "../data/test/music2.mp3",
+                    image: "../assets/images/placeholder.png"
+                }
+            ]);
+        }
         
         renderPlaylist();
         
@@ -62,6 +285,17 @@
                 preloadNextTrack();
             }, 1000);
         }
+    }
+
+    function loadPlaylist(tracksData) {
+        if (!tracksData || !Array.isArray(tracksData) || tracksData.length === 0) {
+            console.log('Нет данных для загрузки плейлиста');
+            return;
+        }
+        
+        console.log(`Загружаем плейлист с ${tracksData.length} треками`);
+        playlist = tracksData;
+        renderPlaylist();
     }
 
     function initializePlayer() {
@@ -1022,12 +1256,22 @@
     
     function updateActiveTrack() {
         const playlistContainer = document.getElementById('playlist-items');
-        if (!playlistContainer) return;
+        if (playlistContainer) {
+            const items = playlistContainer.querySelectorAll('.playlist-item');
+            
+            items.forEach((item, index) => {
+                if (index === currentTrackIndex) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
         
-        const items = playlistContainer.querySelectorAll('.playlist-item');
-        
-        items.forEach((item, index) => {
-            if (index === currentTrackIndex) {
+        // Обновляем активный трек в выпадающем списке
+        const dropdownItems = document.querySelectorAll('.playlist-track-item');
+        dropdownItems.forEach((item, index) => {
+            if (parseInt(item.dataset.index) === currentTrackIndex) {
                 item.classList.add('active');
             } else {
                 item.classList.remove('active');
@@ -1136,32 +1380,4 @@
         
         updatePlayButtonIcon(audioPlaying);
     }
-
-    document.addEventListener('pageLoaded', () => {
-        restorePlayerState();
-    });
-
-    // Добавляем обработчик для события восстановления состояния плеера
-    document.addEventListener('playerStateRestored', () => {
-        // Восстанавливаем информацию о времени и длительности после смены страницы
-        if (window._playerState) {
-            if (window._playerState.currentTime !== undefined) {
-                updateTimeDisplay(window._playerState.currentTime);
-            }
-            
-            if (window._playerState.duration !== undefined) {
-                updateDuration(window._playerState.duration);
-            }
-            
-            if (window._playerState.currentTime !== undefined && window._playerState.duration !== undefined) {
-                updateProgressBar(window._playerState.currentTime, window._playerState.duration);
-            }
-            
-            // Восстанавливаем состояние кнопки плей/пауза
-            updatePlayButtonIcon(audioPlaying);
-            
-            // Восстанавливаем активный трек в плейлисте
-            updateActiveTrack();
-        }
-    });
 })();
