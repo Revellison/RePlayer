@@ -1,5 +1,3 @@
-
-
 (function() {
 
     const state = {
@@ -270,6 +268,66 @@
         initPlaylistEvents();
         
         loadDeferredResources();
+        
+        if (window._playerState) {
+            setTimeout(() => {
+                if (window._playerState.currentTrack) {
+                    const trackInfo = window._playerState.currentTrack;
+                    
+                    const mainTitle = document.querySelector('[data-role="main-title"]');
+                    const mainArtist = document.querySelector('[data-role="main-artist"]');
+                    const mainArt = document.querySelector('[data-role="main-art"]');
+                    const songTitle = document.getElementById('song-title');
+                    const artistName = document.getElementById('artist-name');
+                    const albumArt = document.getElementById('album-art');
+                    
+                    if (trackInfo.title) {
+                        if (mainTitle) mainTitle.textContent = trackInfo.title;
+                        if (songTitle && songTitle !== mainTitle) songTitle.textContent = trackInfo.title;
+                    }
+                    
+                    if (trackInfo.artist) {
+                        if (mainArtist) mainArtist.textContent = trackInfo.artist;
+                        if (artistName && artistName !== mainArtist) artistName.textContent = trackInfo.artist;
+                    }
+                    
+                    if (trackInfo.image) {
+                        if (mainArt) mainArt.src = trackInfo.image;
+                        if (albumArt && albumArt !== mainArt) albumArt.src = trackInfo.image;
+                    }
+                }
+                
+                const playBtns = document.querySelectorAll('[data-role="play-btn"]');
+                const prevBtns = document.querySelectorAll('[data-role="prev-btn"]');
+                const nextBtns = document.querySelectorAll('[data-role="next-btn"]');
+                
+                if (playBtns.length && window.togglePlay) {
+                    playBtns.forEach(btn => {
+                        const newBtn = btn.cloneNode(true);
+                        btn.parentNode.replaceChild(newBtn, btn);
+                        newBtn.addEventListener('click', window.togglePlay);
+                    });
+                }
+                
+                if (prevBtns.length && window.playPrevTrack) {
+                    prevBtns.forEach(btn => {
+                        const newBtn = btn.cloneNode(true);
+                        btn.parentNode.replaceChild(newBtn, btn);
+                        newBtn.addEventListener('click', window.playPrevTrack);
+                    });
+                }
+                
+                if (nextBtns.length && window.playNextTrack) {
+                    nextBtns.forEach(btn => {
+                        const newBtn = btn.cloneNode(true);
+                        btn.parentNode.replaceChild(newBtn, btn);
+                        newBtn.addEventListener('click', window.playNextTrack);
+                    });
+                }
+                
+                document.dispatchEvent(new CustomEvent('playerStateRestored'));
+            }, 150);
+        }
     }
 
     function loadDeferredResources() {

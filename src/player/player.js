@@ -93,6 +93,10 @@
         if (volumeBtn) {
             volumeBtn.addEventListener('click', toggleMute);
         }
+        
+        if (window._playerInitialized) {
+            setTimeout(restorePlayerState, 100);
+        }
     }
     
     function initProgressBars() {
@@ -445,6 +449,16 @@
 
     function updateTrackInfo(track) {
         if (!track) return;
+        
+        if (!window._playerState) {
+            window._playerState = {};
+        }
+        window._playerState.currentTrack = {
+            title: track.title,
+            artist: track.artist,
+            image: track.image,
+            path: track.path
+        };
         
         const mainTitle = document.getElementById('song-title');
         const mainArtist = document.getElementById('artist-name');
@@ -825,6 +839,11 @@
     }
     
     function updateDuration(seconds) {
+        if (!window._playerState) {
+            window._playerState = {};
+        }
+        window._playerState.duration = seconds;
+        
         const durationBottom = document.getElementById('duration');
         const durationTop = document.getElementById('duration-top');
         const durationTopByRole = document.querySelector('[data-role="duration-top"]');
@@ -841,15 +860,12 @@
         
         if (durationBottom) {
             durationBottom.textContent = formattedTime;
-            console.log(`Updated durationBottom: ${formattedTime}`);
         }
         if (durationTop) {
             durationTop.textContent = formattedTime;
-            console.log(`Updated durationTop: ${formattedTime}`);
         }
         if (durationTopByRole && durationTopByRole !== durationTop) {
             durationTopByRole.textContent = formattedTime;
-            console.log(`Updated durationTopByRole: ${formattedTime}`);
         }
     }
     
@@ -882,6 +898,11 @@
     }
     
     function updateTimeDisplay(time) {
+        if (!window._playerState) {
+            window._playerState = {};
+        }
+        window._playerState.currentTime = time;
+        
         const currentTimeBottom = document.getElementById('current-time');
         const currentTimeTop = document.getElementById('current-time-top');
         const currentTimeTopByRole = document.querySelector('[data-role="current-time-top"]');
@@ -1020,6 +1041,16 @@
         next: playNextTrack,
         prev: playPrevTrack
     };
+    
+    // Экспортируем функции в глобальную область видимости
+    window.togglePlay = togglePlay;
+    window.playPrevTrack = playPrevTrack;
+    window.playNextTrack = playNextTrack;
+    window.updatePlayButtonIcon = updatePlayButtonIcon;
+    window.restorePlayerState = restorePlayerState;
+    window.updateTimeDisplay = updateTimeDisplay;
+    window.updateDuration = updateDuration;
+    window.updateProgressBar = updateProgressBar;
 
     function preloadTracksInfo() {
         if (!playlist || playlist.length === 0 || currentTrackIndex < 0 || currentTrackIndex >= playlist.length) return;
@@ -1087,4 +1118,50 @@
             }
         });
     }
+
+    function restorePlayerState() {
+        if (!window._playerState) return;
+        
+        if (window._playerState.currentTime !== undefined) {
+            updateTimeDisplay(window._playerState.currentTime);
+        }
+        
+        if (window._playerState.duration !== undefined) {
+            updateDuration(window._playerState.duration);
+        }
+        
+        if (window._playerState.currentTime !== undefined && window._playerState.duration !== undefined) {
+            updateProgressBar(window._playerState.currentTime, window._playerState.duration);
+        }
+        
+        updatePlayButtonIcon(audioPlaying);
+    }
+
+    document.addEventListener('pageLoaded', () => {
+        restorePlayerState();
+    });
+
+    // Добавляем обработчик для события восстановления состояния плеера
+    document.addEventListener('playerStateRestored', () => {
+        // Восстанавливаем информацию о времени и длительности после смены страницы
+        if (window._playerState) {
+            if (window._playerState.currentTime !== undefined) {
+                updateTimeDisplay(window._playerState.currentTime);
+            }
+            
+            if (window._playerState.duration !== undefined) {
+                updateDuration(window._playerState.duration);
+            }
+            
+            if (window._playerState.currentTime !== undefined && window._playerState.duration !== undefined) {
+                updateProgressBar(window._playerState.currentTime, window._playerState.duration);
+            }
+            
+            // Восстанавливаем состояние кнопки плей/пауза
+            updatePlayButtonIcon(audioPlaying);
+            
+            // Восстанавливаем активный трек в плейлисте
+            updateActiveTrack();
+        }
+    });
 })();
