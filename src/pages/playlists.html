@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <title>Плейлисты - RE:Player</title>
-    <link rel="stylesheet" href="../index.css" />
+    <link rel="stylesheet" href="../index.css"/>
+    <link rel="stylesheet" href="../pages/styles/playlist.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   </head>
   <body class="playlists-page">
@@ -14,11 +15,87 @@
     </div>
     
     <div class="content">
-      <h1>Плейлисты</h1>
-      <div class="playlists-grid">
-        <p>Ваши плейлисты появятся здесь</p>
+      <div class="playlist-header">
+        <div class="left-side">
+          <h1>Плейлисты</h1>
+          <button id="create-playlist-btn" class="primary-btn">
+            <i class="fa-solid fa-plus"></i> Создать плейлист</button>
+        </div>
+        <div class="right-side">
+          <div class="playlist-controls">
+            
+        </button>
+        <div class="playlist-search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" placeholder="Поиск плейлистов..." id="playlist-search">
+          </div>
+        </div>
       </div>
     </div>
+      <div class="playlists-grid">
+        <div class="playlist-card">
+          <div class="playlist-art">
+            <img src="../assets/images/placeholder.png" alt="Обложка плейлиста">
+            <div class="playlist-overlay">
+            </div>
+          </div>
+          <div class="playlist-info">
+            <h3>placeholder</h3>
+            <p>n треков</p>
+          </div>
+        </div>
+        <div class="playlist-card">
+          <div class="playlist-art">
+            <img src="../assets/images/placeholder.png" alt="Обложка плейлиста">
+            <div class="playlist-overlay">
+            </div>
+          </div>
+          <div class="playlist-info">
+            <h3>placeholder</h3>
+            <p>n треков</p>
+          </div>
+        </div>
+        <div class="playlist-card">
+          <div class="playlist-art">
+            <img src="../assets/images/placeholder.png" alt="Обложка плейлиста">
+            <div class="playlist-overlay">
+            </div>
+          </div>
+          <div class="playlist-info">
+            <h3>placeholder</h3>
+            <p>n треков</p>
+          </div>
+        </div>
+        <div class="playlist-card">
+          <div class="playlist-art">
+            <img src="../assets/images/placeholder.png" alt="Обложка плейлиста">
+            <div class="playlist-overlay">
+            </div>
+          </div>
+          <div class="playlist-info">
+            <h3>placeholder</h3>
+            <p>n треков</p>
+          </div>
+        </div>
+        <div class="playlist-card">
+          <div class="playlist-art">
+            <img src="../assets/images/placeholder.png" alt="Обложка плейлиста">
+            <div class="playlist-overlay">
+            </div>
+          </div>
+          <div class="playlist-info">
+            <h3>placeholder</h3>
+            <p>n треков</p>
+          </div>
+        </div>
+        
+        <div class="empty-state">
+          <i class="fa-solid fa-music"></i>
+          <p>У вас пока нет плейлистов</p>
+          <p>Создайте свой первый плейлист!</p>
+        </div>
+      </div>
+
     
     <div id="footer-placeholder">
     </div>
