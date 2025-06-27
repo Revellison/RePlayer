@@ -1,0 +1,108 @@
+@font-face {
+    font-family: 'Montserrat';
+    src: url('src/fonts/Montserrat-VariableFont_wght.ttf') format('truetype');
+    font-weight: 100 900;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+.replayer-text {
+    font-weight: 800;
+    margin: 0;
+    padding: 5px 20px;
+    font-size: 50px;
+    user-select: none;
+    white-space: nowrap;
+    display: inline-block;
+}
+
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(100%);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInDown {
+    0% {
+        opacity: 0;
+        transform: translateY(-100%);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: #000;
+    color: #fff;
+    overflow: hidden;
+    height: 60px;
+    animation: fadeInDown 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: #000;
+    color: #fff;
+    overflow: hidden;
+    height: 60px;
+    animation: fadeInUp 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scroll-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.scroll-content {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    animation-duration: 20s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+.left-scroll .scroll-content {
+    animation-name: scrollLeft;
+}
+
+.right-scroll .scroll-content {
+    animation-name: scrollRight;
+}
+
+@keyframes scrollLeft {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+@keyframes scrollRight {
+    0% {
+        transform: translateX(-50%);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}
