@@ -8,37 +8,44 @@
 </head>
 <body>
     <header>
-        <div class="scroll-container left-scroll">
-            <div class="scroll-content">
-                <span class="replayer-text">RE:PLAYER!</span>
-                <span class="replayer-text">RE:PLAYER!</span>
-                <span class="replayer-text">RE:PLAYER!</span>
-                <span class="replayer-text">RE:PLAYER!</span>
-                <span class="replayer-text">RE:PLAYER!</span>
-                <span class="replayer-text">RE:PLAYER!</span>
-                <span class="replayer-text">RE:PLAYER!</span>
-                <span class="replayer-text">RE:PLAYER!</span>
-                <span class="replayer-text">RE:PLAYER!</span>
-                <span class="replayer-text">RE:PLAYER!</span>
+        <div class="ticker-wrap" style="animation: fadeInDown 1s cubic-bezier(0.165, 0.84, 0.44, 1);">
+            <div class="ticker">
+              <span class="item-collection-1">
+                <span class="item"> RE:PLAYER! RE:PLAYER! RE:PLAYER! RE:PLAYER! RE:PLAYER! </span>
+                <span class="item"> RE:PLAYER! RE:PLAYER! RE:PLAYER! RE:PLAYER! RE:PLAYER! </span>
+              </span>
+              <span class="item-collection-2">
+                <span class="item"> RE:PLAYER! RE:PLAYER! RE:PLAYER! RE:PLAYER! RE:PLAYER! </span>
+                <span class="item"> RE:PLAYER! RE:PLAYER! RE:PLAYER! RE:PLAYER! RE:PLAYER! </span>
+              </span>
             </div>
-        </div>
+          <div>
     </header>
 
-    <footer>
-        <div class="scroll-container right-scroll">
-            <div class="scroll-content">
-                <span class="replayer-text">RE:PLAYER!</span>
-                <span class="replayer-text">RE:PLAYER!</span>
-                <span class="replayer-text">RE:PLAYER!</span>
-                <span class="replayer-text">RE:PLAYER!</span>
-                <span class="replayer-text">RE:PLAYER!</span>
-                <span class="replayer-text">RE:PLAYER!</span>
-                <span class="replayer-text">RE:PLAYER!</span>
-                <span class="replayer-text">RE:PLAYER!</span>
-                <span class="replayer-text">RE:PLAYER!</span>
-                <span class="replayer-text">RE:PLAYER!</span>
-            </div>
+    <div class="content">
+        <div class="download-card">
+            <img src="src/img/icon.png" alt="Replayer">
+            <button>Скачать</button>
         </div>
+
+        <div class="about">
+            <p><span class="typewriter">RePlayer — это открытый кроссплатформенный музыкальный плеер, созданный с использованием современных технологий Electron, React и Vite. Проект ориентирован на удобство и функциональность, предоставляя пользователям возможность искать, прослушивать и управлять музыкой из различных бесплатных источников через интеграцию с открытыми API, включая YouTube Music. RePlayer поддерживает отображение информации о треках, тексты песен, популярные чарты и тренды, а также оснащён простым и интуитивным аудиоплеером с контролем воспроизведения и громкости. Благодаря модульной архитектуре и использованию современных веб-технологий, RePlayer обеспечивает высокую производительность и лёгкость расширения, оставаясь полностью бесплатным и открытым для сообщества.</span></p>
+        </div>
+    </div>
+
+    <footer>
+        <div class="ticker-wrap" style="bottom: 0; animation: fadeInUp 1s cubic-bezier(0.165, 0.84, 0.44, 1);">
+            <div class="ticker" style="animation: marquee 30s linear infinite reverse;">
+              <span class="item-collection-1" style="animation: swap 30s linear infinite reverse;">
+                <span class="item"> RE:PLAYER! RE:PLAYER! RE:PLAYER! RE:PLAYER! RE:PLAYER! </span>
+                <span class="item"> RE:PLAYER! RE:PLAYER! RE:PLAYER! RE:PLAYER! RE:PLAYER! </span>
+              </span>
+              <span class="item-collection-2" style="animation: swap 30s linear infinite reverse;">
+                <span class="item"> RE:PLAYER! RE:PLAYER! RE:PLAYER! RE:PLAYER! RE:PLAYER! </span>
+                <span class="item"> RE:PLAYER! RE:PLAYER! RE:PLAYER! RE:PLAYER! RE:PLAYER! </span>
+              </span>
+            </div>
+          <div>
     </footer>
 
     <script src="js/scroller.js"></script>

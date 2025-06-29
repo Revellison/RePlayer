@@ -8,39 +8,15 @@ body {
     font-family: 'Montserrat', sans-serif;
     margin: 0;
     padding: 0;
-    overflow-x: hidden;
+    background-color: white;
 }
 
 .replayer-text {
     font-weight: 800;
     margin: 0;
-    padding: 5px 20px;
+    padding: 5px;
     font-size: 50px;
     user-select: none;
-    white-space: nowrap;
-    display: inline-block;
-}
-
-@keyframes fadeInUp {
-    0% {
-        opacity: 0;
-        transform: translateY(100%);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes fadeInDown {
-    0% {
-        opacity: 0;
-        transform: translateY(-100%);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 header {
@@ -49,9 +25,6 @@ header {
     width: 100%;
     background-color: #000;
     color: #fff;
-    overflow: hidden;
-    height: 60px;
-    animation: fadeInDown 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 footer {
@@ -60,49 +33,158 @@ footer {
     width: 100%;
     background-color: #000;
     color: #fff;
-    overflow: hidden;
-    height: 60px;
-    animation: fadeInUp 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.scroll-container {
-    width: 100%;
-    height: 100%;
+.content {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    gap: 90px;
 }
 
-.scroll-content {
-    display: flex;
-    align-items: center;
-    white-space: nowrap;
-    animation-duration: 20s;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
+.about p {
+    max-width: 900px;
+    text-align: center;
+    color: #111111;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
 }
 
-.left-scroll .scroll-content {
-    animation-name: scrollLeft;
+/* Typewriter effect */
+.typewriter {
+    display: inline-block;
+    animation: revealText 2s ease-in-out;
+    animation-fill-mode: forwards;
 }
 
-.right-scroll .scroll-content {
-    animation-name: scrollRight;
-}
-
-@keyframes scrollLeft {
-    0% {
-        transform: translateX(0);
+@keyframes revealText {
+    from {
+        clip-path: inset(0 0 100% 0);
     }
-    100% {
-        transform: translateX(-50%);
+    to {
+        clip-path: inset(0 0 0% 0);
     }
 }
 
-@keyframes scrollRight {
-    0% {
-        transform: translateX(-50%);
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .typewriter {
+        animation: revealText 2s ease-in-out;
     }
-    100% {
-        transform: translateX(0);
-    }
+}
+
+.ticker-wrap {
+  width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  white-space: nowrap;
+  position: fixed;
+  background-color: #111111;
+  user-select: none;
+}
+.ticker {
+  display: inline-block;
+  animation: marquee 30s linear infinite;
+}
+.item-collection-1 {
+  position: relative;
+  left: 0%;
+  animation: swap 30s linear infinite;
+}
+
+.item {
+  display: inline-block;
+  font-size: 48px;
+  color: #ffffff;   
+  font-weight: 800;
+  font-family: sans-serif;
+}
+
+@keyframes fadeInDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0)
+  }
+  100% {
+    transform: translateX(-100%)
+  }
+}
+
+@keyframes swap {
+  0%, 50% {
+    left: 0%;
+  }
+  50.01%,
+  100% {
+    left: 100%;
+  }
+}
+
+/* Content and download card styles */
+.content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 100px 20px 100px 20px; /* Отступы для header и footer */
+  box-sizing: border-box;
+}
+
+.download-card {
+  display: flex;
+  margin-top: 30px;
+  flex-direction: column;
+  align-items: center;
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 40px;
+  color: #ffffff;
+  background-color: #111111;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  animation: fadeInUp 1s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.download-card img {
+  max-width: 200px;
+  height: auto;
+  margin-bottom: 20px;
+  border-radius: 15px;
+}
+
+.download-card button {
+  background: #ffffff;
+  color: #111111;
+  border: none;
+  padding: 15px 50px;
+  border-radius: 25px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.download-card button:hover {
+  transform: translateY(-2px);
 }
