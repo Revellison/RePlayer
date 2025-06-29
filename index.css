@@ -84,12 +84,12 @@ footer {
 }
 .ticker {
   display: inline-block;
-  animation: marquee 30s linear infinite;
+  animation: marquee 80s linear infinite;
 }
 .item-collection-1 {
   position: relative;
   left: 0%;
-  animation: swap 30s linear infinite;
+  animation: swap 80s linear infinite;
 }
 
 .item {
@@ -141,13 +141,12 @@ footer {
   }
 }
 
-/* Content and download card styles */
 .content {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  padding: 100px 20px 100px 20px; /* Отступы для header и footer */
+  padding: 100px 20px 100px 20px; 
   box-sizing: border-box;
 }
 
